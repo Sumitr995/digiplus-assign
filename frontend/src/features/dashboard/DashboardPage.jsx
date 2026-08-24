@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { getStatsSummary, getLogs, getAnomalies } from '../../api';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +8,7 @@ import { Table, TableHeader, TableHead, TableBody, TableRow, TableCell } from '@
 import { Activity, Database, AlertTriangle, Clock, BarChart3, Shield, ArrowRight, RefreshCw, Download } from 'lucide-react';
 
 export default function DashboardPage() {
+  const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [recentLogs, setRecentLogs] = useState([]);
   const [recentAnomalies, setRecentAnomalies] = useState([]);
@@ -175,11 +176,11 @@ export default function DashboardPage() {
             </TableHeader>
             <TableBody>
               {recentLogs.map((log)=>(
-                <TableRow key={log.id} className="cursor-pointer" onClick={()=> window.location.hash=`#/logs/${log.id}`}>
+                <TableRow key={log.id} className="cursor-pointer hover:bg-surfaceSoft" onClick={()=> navigate(`/logs/${log.id}`)}>
                   <TableCell>
-                    <Link to={`/logs/${log.id}`} className="font-mono text-xs font-medium hover:underline flex items-center gap-1.5">
+                    <span className="font-mono text-xs font-medium flex items-center gap-1.5">
                       {log.source} {log.flagged && <span className="w-1.5 h-1.5 rounded-full bg-terminalRed" />}
-                    </Link>
+                    </span>
                   </TableCell>
                   <TableCell className="hidden sm:table-cell text-xs text-designBody">{new Date(log.timestamp).toLocaleString()}</TableCell>
                   <TableCell><Badge variant={log.severity} className="text-[11px] capitalize">{log.severity}</Badge></TableCell>
@@ -205,8 +206,8 @@ export default function DashboardPage() {
             </TableHeader>
             <TableBody>
               {recentAnomalies.map(({anomaly, logEntry})=>(
-                <TableRow key={anomaly.id} className="cursor-pointer" onClick={()=> window.location.hash=`#/anomalies/${anomaly.id}`}>
-                  <TableCell><Link to={`/anomalies/${anomaly.id}`}><Badge variant="critical" className="font-mono">{anomaly.score}</Badge></Link></TableCell>
+                <TableRow key={anomaly.id} className="cursor-pointer hover:bg-surfaceSoft" onClick={()=> navigate(`/anomalies/${anomaly.id}`)}>
+                  <TableCell><Badge variant="critical" className="font-mono">{anomaly.score}</Badge></TableCell>
                   <TableCell className="font-mono text-xs">{logEntry?.source || '-'}</TableCell>
                   <TableCell className="text-xs max-w-[220px] truncate" title={anomaly.reasonSummary}>{anomaly.reasonSummary}</TableCell>
                 </TableRow>

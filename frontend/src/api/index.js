@@ -94,6 +94,7 @@ export async function getAnomalies(params = {}) {
       const log = LOGS.find((l) => l.id === a.logEntryId);
       return { anomaly: a, logEntry: log || null };
     });
+    if (params.logEntryId) items = items.filter((i) => i.anomaly.logEntryId === params.logEntryId);
     if (params.minScore) items = items.filter((i) => i.anomaly.score >= Number(params.minScore));
     if (params.reasonCode) items = items.filter((i) => i.anomaly.reasonCodes.includes(params.reasonCode));
     const page = Number(params.page) || 1;

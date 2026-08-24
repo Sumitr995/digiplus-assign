@@ -36,13 +36,14 @@ function toExplanationDto(doc) {
   return dto;
 }
 
-// GET /api/anomalies?page&pageSize&minScore&reasonCode
+// GET /api/anomalies?page&pageSize&minScore&reasonCode&logEntryId
 router.get('/', async (req, res, next) => {
   try {
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const pageSize = Math.min(100, Math.max(1, parseInt(req.query.pageSize, 10) || 25));
     const minScore = req.query.minScore !== undefined ? Number(req.query.minScore) : undefined;
     const reasonCode = req.query.reasonCode ? req.query.reasonCode.toString().trim() : undefined;
+    const logEntryId = req.query.logEntryId ? req.query.logEntryId.toString().trim() : undefined;
 
     const filter = {};
     if (minScore !== undefined && !isNaN(minScore)) {
@@ -50,6 +51,12 @@ router.get('/', async (req, res, next) => {
     }
     if (reasonCode) {
       filter.reasonCodes = reasonCode;
+    }
+    if (logEntryId) {
+      if (!mongoose.Types.ObjectId.isValid(logEntryId)) {
+        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Invalid logEntryId' });
+      }
+      filter.logEntryId = new mongoose.Types.ObjectId(logEntryId);
     }
 
     const total = await Anomaly.countDocuments(filter);

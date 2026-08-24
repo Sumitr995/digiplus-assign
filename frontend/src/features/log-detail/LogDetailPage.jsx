@@ -31,9 +31,13 @@ export default function LogDetailPage() {
         setLog(lr);
         if (lr.flagged) {
           try {
-            let found=null; for(let p=1;p<=5;p++){ const res=await getAnomalies({page:p,pageSize:100}); const m=res.items.find(it=>it.logEntry && it.logEntry.id===lr.id); if(m){found=m;break;} if(p>=res.totalPages) break; }
-            if(found){ setAnomaly(found.anomaly); try{ const d=await getAnomalyById(found.anomaly.id); if(d.explanation) setExplanation(d.explanation);}catch{} }
-          }catch{}
+            const res = await getAnomalies({ logEntryId: lr.id, pageSize: 1 });
+            if (res.items && res.items.length > 0) {
+              const found = res.items[0];
+              setAnomaly(found.anomaly);
+              try { const d = await getAnomalyById(found.anomaly.id); if (d.explanation) setExplanation(d.explanation); } catch {}
+            }
+          } catch {}
         }
       }
     } catch (err) { const msg=err.message||err.error||'Failed'; const code=err.error? `${err.error}: ${msg}`:msg; setError({status:err.status,message:code}); } finally { setLoading(false); }
