@@ -7,7 +7,6 @@
 ## Repository
 
 ```text
-DigiPlus-LogAnalyzer/
 ├── Context/
 ├── Resources/
 │   └── log-data.csv
