@@ -4,6 +4,16 @@ Deterministic anomaly detection + on-demand AI explanations for 10,000-row secur
 
 > **Pipeline:** `CSV upload / seed → Validation + normalization → Persist LogEntry → Deterministic anomaly engine → Persist Anomaly → On-demand AI explanation → Cached Explanation → REST API → React list/timeline + detail`
 
+## Preview
+
+**Analytics Dashboard — tabular KPI + severity/reason breakdown + recent tables**
+
+![Analytics Dashboard](Context/images/image-1.png)
+
+**Log Table — tabular 25/page, flagged in red, pill filters + pagination**
+
+![Log Table](Context/images/image-2.png)
+
 ---
 
 ## Features
@@ -19,12 +29,13 @@ Deterministic anomaly detection + on-demand AI explanations for 10,000-row secur
 - Stats summary, request logger, error shapes `{error,message}`
 
 **Frontend (`/frontend`)**
-- Vite + React 18 + React Router 6, plain CSS
-- `GET /logs` paginated table (25/page) — flagged rows red border/badge, filters flagged/severity/date range/search `q`
-- `GET /logs/:id` & `GET /anomalies/:id` detail: 11 fields + `score`/`reasonCodes`/`reasonSummary`/`ruleVersion`
+- Vite 5 + React 18 + React Router 6, Tailwind 3.4 + shadcn/ui (`Button`, `Card`, `Badge`, `Table`)
+- **Dashboard**: tabular KPI 4-up (Total/Flagged/Flag Rate/Time Range), severity bars, reason code bars, health, recent logs/anomalies tables
+- `GET /logs` tabular 25/page — `search-pill` + severity/date/flagged pills, flagged `border-l-2 terminalRed`, pagination pills
+- `GET /logs/:id` & `GET /anomalies/:id` detail: tabular `Table` for 11 fields + `TerminalCard` anomaly + `PricingCard dark` AI panel
 - AI panel: `explanation` / `likelyRootCause` / `recommendedNextStep` + Generate/Force, loading spinner, `502` retry
 - Mock fallback in `DEV` (`src/api/mock.js`) when `VITE_API_BASE_URL` unset
-- Responsive laptop layout, semantic HTML, `focus-visible`, `aria-live`
+- Responsive (md 768, lg 1024), `Nunito`/`Inter`/`JetBrains Mono`, `focusRing`
 
 ---
 
@@ -37,8 +48,8 @@ Deterministic anomaly detection + on-demand AI explanations for 10,000-row secur
 | DB | MongoDB Atlas M0 / local `27017` | No local install (Atlas) — local for dev |
 | ODM | Mongoose 8 | Simple schemas |
 | CSV | `csv-parse` 5 + `multer` | Reliable ingest |
-| AI | Groq `llama3-70b-8192` via `fetch` | Single small module per `07-AI-Explanation.md` |
-| Styling | Plain CSS | Faster than Tailwind setup |
+| AI | Groq `llama-3.3-70b-versatile` via `fetch` | Single small module per `07-AI-Explanation.md` |
+| Styling | Tailwind CSS 3.4 + shadcn/ui | Tabular dashboard, pill inputs, hairline tables per `Context/Agent context/DESIGN.md` |
 
 ---
 
@@ -155,7 +166,7 @@ cp .env.example .env # VITE_API_BASE_URL=http://localhost:4000/api
 MONGODB_URI=mongodb://localhost:27017/digiplus
 PORT=4000
 GROQ_API_KEY=gsk_your-groq-key-here
-AI_MODEL=llama3-70b-8192
+AI_MODEL=llama-3.3-70b-versatile
 AI_TIMEOUT_MS=15000
 ```
 
