@@ -5,7 +5,7 @@ const requestLogger = require('./middleware/requestLogger');
 
 const app = express();
 
-const allowedOrigins = (process.env.CORS_ORIGINS || process.env.ALLOWED_ORIGINS || 'https://digiplus-assign-frontend.vercel.app,https://digiplus-assign-drds.vercel.app,http://localhost:3000,http://localhost:5173,http://localhost:4000')
+const allowedOrigins = (process.env.CORS_ORIGINS || process.env.ALLOWED_ORIGINS || 'https://digiplus-assign-frontend.vercel.app,http://localhost:3000')
   .split(',')
   .map((o) => o.trim())
   .filter(Boolean);
@@ -14,8 +14,8 @@ app.use(
   cors({
     origin: (origin, cb) => {
       if (!origin) return cb(null, true);
-      if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) return cb(null, true);
-      return cb(null, true); // allow all, log for debugging
+      if (allowedOrigins.includes(origin)) return cb(null, true);
+      return cb(new Error(`CORS not allowed for ${origin}`));
     },
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
