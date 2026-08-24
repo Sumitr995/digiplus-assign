@@ -5,7 +5,7 @@ const requestLogger = require('./middleware/requestLogger');
 
 const app = express();
 
-const allowedOrigins = (process.env.CORS_ORIGINS || process.env.ALLOWED_ORIGINS || 'https://digiplus-assign-frontend.vercel.app,http://localhost:3000')
+const allowedOrigins = (process.env.CORS_ORIGINS || process.env.ALLOWED_ORIGINS || 'https://digiplus-assign-frontend.vercel.app,https://digiplus-assign-drds.vercel.app')
   .split(',')
   .map((o) => o.trim())
   .filter(Boolean);
