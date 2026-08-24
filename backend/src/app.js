@@ -5,7 +5,7 @@ const requestLogger = require('./middleware/requestLogger');
 
 const app = express();
 
-const rawOrigins = [process.env.CORS_ORIGINS, process.env.PROD_URL, process.env.DEV_URL, process.env.FRONTEND_URL]
+const rawOrigins = [process.env.CORS_ORIGINS, process.env.PROD_URL, process.env.FRONTEND_URL, process.env.DEV_URL]
   .filter(Boolean)
   .join(',')
   .split(',')

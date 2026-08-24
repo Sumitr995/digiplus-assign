@@ -1,13 +1,24 @@
 import { LOGS, ANOMALIES, EXPLANATIONS } from './mock.js';
 
-const BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
+const PROD_API = 'https://digiplus-assign-drds.vercel.app/api';
+const LOCAL_API = 'http://localhost:4000/api';
+// Primary is env or prod, fallback is localhost if prod fails
+const PRIMARY_BASE = import.meta.env.VITE_API_BASE_URL || PROD_API;
+const FALLBACK_BASE = LOCAL_API;
 
-// Use mock only in DEV when no explicit API base is configured.
-// This allows `VITE_API_BASE_URL=http://localhost:4000/api npm run dev` to hit live backend.
-const USE_MOCK = import.meta.env.DEV && !import.meta.env.VITE_API_BASE_URL;
+// Mock only if explicitly enabled
+const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
+
+async function fetchWithFallback(url, fetchOptions) {
+  try {
+    return await fetch(url, fetchOptions);
+  } catch (err) {
+    // Network failure (prod down) -> will be retried by caller with fallback
+    throw err;
+  }
+}
 
 async function request(path, options = {}) {
-  const url = `${BASE}${path}`;
   const isFormData = options.body instanceof FormData;
   const headers = { ...options.headers };
   if (!isFormData && !headers['Content-Type']) {
@@ -16,10 +27,36 @@ async function request(path, options = {}) {
   if (isFormData && headers['Content-Type']) {
     delete headers['Content-Type'];
   }
-  const res = await fetch(url, {
-    headers,
-    ...options,
-  });
+  const fetchOptions = { headers, ...options };
+
+  // 1. Try primary (production)
+  let url = `${PRIMARY_BASE}${path}`;
+  let res;
+  try {
+    res = await fetchWithFallback(url, fetchOptions);
+  } catch (netErr) {
+    // Production unreachable -> try localhost fallback
+    if (PRIMARY_BASE !== FALLBACK_BASE) {
+      console.warn(`[API] Primary ${PRIMARY_BASE} failed (${netErr.message}), trying fallback ${FALLBACK_BASE}`);
+      url = `${FALLBACK_BASE}${path}`;
+      res = await fetch(url, fetchOptions);
+    } else {
+      throw netErr;
+    }
+  }
+
+  // If prod returned 5xx / network-like error, also try fallback (optional, only for 502/503/504)
+  if (!res.ok && res.status >= 500 && PRIMARY_BASE !== FALLBACK_BASE) {
+    // Don't fallback on 4xx (client error), only server unreachable
+    if (res.status === 502 || res.status === 503 || res.status === 504) {
+      console.warn(`[API] Primary returned ${res.status}, trying fallback ${FALLBACK_BASE}`);
+      url = `${FALLBACK_BASE}${path}`;
+      const fallbackRes = await fetch(url, fetchOptions);
+      if (fallbackRes.ok) return fallbackRes.json();
+      // if fallback also fails, throw original prod error
+    }
+  }
+
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw { status: res.status, ...body };
