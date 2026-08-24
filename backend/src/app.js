@@ -5,13 +5,10 @@ const requestLogger = require('./middleware/requestLogger');
 
 const app = express();
 
-const allowedOrigins = [
-  'https://digiplus-assign-frontend.vercel.app',
-  'https://digiplus-assign-drds.vercel.app',
-  'http://localhost:3000',
-  'http://localhost:5173',
-  'http://localhost:4000',
-];
+const allowedOrigins = (process.env.CORS_ORIGINS || process.env.ALLOWED_ORIGINS || 'https://digiplus-assign-frontend.vercel.app,https://digiplus-assign-drds.vercel.app,http://localhost:3000,http://localhost:5173,http://localhost:4000')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
 
 app.use(
   cors({
